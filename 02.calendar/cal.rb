@@ -42,28 +42,25 @@ def show_calendar(beginning_of_the_month, end_of_the_month)
     print "  " + "   " * (day_of_week - 1)
   end
   now = Date.today
-  (1..end_of_the_month.day).each do |day|
-    case day_of_week
+  (beginning_of_the_month..end_of_the_month).each do |date|
+    case date.wday
     when 6 # 土曜日
-      print_day = day.to_s.rjust(3, " ") + "\n"
-      day_of_week = 0
+      print_day = date.day.to_s.rjust(3, " ") + "\n"
     when 0 # 日曜日
-      print_day = day.to_s.rjust(2, " ")
-      day_of_week += 1
+      print_day = date.day.to_s.rjust(2, " ")
     else # 月~金曜日
-      print_day = day.to_s.rjust(3, " ")
-      day_of_week += 1
+      print_day = date.day.to_s.rjust(3, " ")
     end
 
     # 今日の日付のハイライト
-    if now == Date.new(end_of_the_month.year, end_of_the_month.month, day)
+    if now == date
       print "\e[30m\e[47m#{print_day}\e[0m"
     else
       print print_day
     end
  
     # 月末が土曜でない場合、改行を出力する
-    if day == end_of_the_month.day && day_of_week != 0
+    if date.day == end_of_the_month.day && date.wday != 0
       puts
     end
   end
