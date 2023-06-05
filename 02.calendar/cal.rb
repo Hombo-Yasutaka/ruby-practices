@@ -60,7 +60,7 @@ def show_calendar(beginning_of_the_month, end_of_the_month)
     end
  
     # 月末が土曜でない場合、改行を出力する
-    if date.day == end_of_the_month.day && date.wday != 0
+    if date.day == end_of_the_month.day && date.wday != 6
       puts
     end
   end
