@@ -2,7 +2,7 @@ require 'optparse'
 require 'date'
 
 # コマンドラインで指定されたオプション引数の取得
-def get_options(year, month)
+def get_options()
   # 年月の初期化
   year  = 0
   month = 0
@@ -71,7 +71,7 @@ def show_calendar(beginning_of_the_month, end_of_the_month)
 end
 
 # コマンドラインで指定された年月を取得する
-year, month = get_options(year, month)
+year, month = get_options
 
 # 月初の日付情報
 beginning_of_the_month = Date.new(year, month, 1)
