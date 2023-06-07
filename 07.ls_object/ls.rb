@@ -2,40 +2,36 @@
 
 COLUMN = 3.0
 
-def ls_output(files)
-  output_arr = []
-  file_num = files.size
-  # 出力する行数 = ( ファイル数 / COLUMN )の小数点以下切り上げ
-  row = (file_num / COLUMN).ceil
-  # ループ内の処理でnilを避けるため
-  (1..row * COLUMN - files.length).each do
-    files.push('')
+# 引数filesは、['file1', 'file2', ...]という形を想定
+def generate_output_lines(files)
+  output_lines = Array.new(COLUMN) { Array.new(ROW) { '' } }
+  convert_2d_array(files, output_lines)
+  align_column_width(output_lines)
+  output_lines.transpose
+end
+
+# 引数output_linesは[ [ 'file1', 'file2' ], [ 'file3', '' ], ...]という形を想定
+def align_column_width(output_lines)
+  output_lines.each do |line|
+    max_str_length = line.max_by(&:length).length
+    line.map! { |file| file.ljust(max_str_length, ' ') }
   end
-  # 列数分ループ処理
-  (1..COLUMN).each do
-    row_arr = []
-    max_str_length = files[0].length
-    # 行数分ループ処理
-    (1..row).each do
-      # 取得したファイルを先頭から取り出して格納、取り出すファイルが無くなれば、nilが入る
-      file = files.shift
-      max_str_length = file.length if file.length > max_str_length
-      row_arr.push(file)
-    end
-    # 列ごとの幅を調節する
-    row_arr.map! { |file| file.ljust(max_str_length, ' ') }
-    # 列のデータを取得できたので、配列に格納(二次元配列)
-    output_arr.push(row_arr)
+end
+
+# 引数to_2d_arrayはCOLUMN × ROWの二次元配列を想定
+def convert_2d_array(from_1d_array, to_2d_array)
+  from_1d_array.each_with_index do |file, index|
+    column = index / ROW
+    row = index % ROW
+    to_2d_array[column][row] = file
   end
-  # ループから抜けてtranspose(転置)
-  output_arr.transpose
 end
 
 files = Dir.glob('*')
 
 if !files.empty?
-  outputs = ls_output(files)
-  outputs.each do |output|
-    puts output.join('  ')
+  ROW = (files.size / COLUMN).ceil
+  generate_output_lines(files).each do |line|
+    puts line.join('  ')
   end
 end
