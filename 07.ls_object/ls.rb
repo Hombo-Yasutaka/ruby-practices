@@ -2,36 +2,39 @@
 
 COLUMN = 3.0
 
+# 返り値はCOLUMN × output_rowの行列(2次元配列)を想定
+def generate_files_2d(files, output_row)
+  files_2d = Array.new(COLUMN) { Array.new(output_row) { '' } }
+  files.each_with_index do |file, index|
+    column = index / output_row
+    row = index % output_row
+    files_2d[column][row] = file
+  end
+  files_2d
+end
+
 # 引数filesは、['file1', 'file2', ...]という形を想定
-def generate_output_lines(files)
-  output_lines = Array.new(COLUMN) { Array.new(ROW) { '' } }
-  convert_2d_array(files, output_lines)
-  align_column_width(output_lines)
-  output_lines.transpose
+def calculate_max_file_name_length(files)
+  files.max_by(&:length).length
 end
 
-# 引数output_linesは[ [ 'file1', 'file2' ], [ 'file3', '' ], ...]という形を想定
-def align_column_width(output_lines)
-  output_lines.each do |line|
-    max_str_length = line.max_by(&:length).length
-    line.map! { |file| file.ljust(max_str_length, ' ') }
+def align_file_name_length_with_spaces(files, length)
+  files.map { |file| file.ljust(length, ' ') }
+end
+
+input_files = Dir.glob('*')
+
+if !input_files.empty?
+  # 出力する際の行数
+  output_row = (input_files.size / COLUMN).ceil
+  files_2d = generate_files_2d(input_files, output_row)
+  aligned_files_2d = []
+  files_2d.each do |files_1d|
+    max_length = calculate_max_file_name_length(files_1d)
+    aligned_files_2d << align_file_name_length_with_spaces(files_1d, max_length)
   end
-end
-
-# 引数to_2d_arrayはCOLUMN × ROWの二次元配列を想定
-def convert_2d_array(from_1d_array, to_2d_array)
-  from_1d_array.each_with_index do |file, index|
-    column = index / ROW
-    row = index % ROW
-    to_2d_array[column][row] = file
-  end
-end
-
-files = Dir.glob('*')
-
-if !files.empty?
-  ROW = (files.size / COLUMN).ceil
-  generate_output_lines(files).each do |line|
-    puts line.join('  ')
+  # aligned_files_2d(COLUMN × output_row行列)をCOLUMN列で出力する
+  aligned_files_2d.transpose.each do |files_1d|
+    puts files_1d.join('  ')
   end
 end
