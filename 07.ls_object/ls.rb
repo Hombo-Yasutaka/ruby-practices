@@ -3,33 +3,40 @@
 COLUMN = 3.0
 
 # 返り値はCOLUMN × row_sizeの行列(2次元配列)を想定
-def generate_file_list(files)
+def generate_files(input_files)
   # 出力する際の行数
-  row_size = (files.size / COLUMN).ceil
-  file_list = Array.new(COLUMN) { Array.new(row_size) { '' } }
-  files.each_with_index do |file, index|
+  row_size = (input_files.size / COLUMN).ceil
+  files = Array.new(COLUMN) { Array.new(row_size) { '' } }
+  input_files.each_with_index do |file, index|
     column = index / row_size
     row = index % row_size
-    file_list[column][row] = file
+    files[column][row] = file
   end
-  file_list
+  files
 end
 
-def print_file_list(file_list)
-  file_list_for_output = []
-  file_list.each do |files|
-    max_length = files.max_by(&:length).length
-    file_list_for_output << files.map { |file| file.ljust(max_length, ' ') }
+def print_files(files)
+  output_files = generate_output_files(files)
+  output_files.each do |parts_of_files|
+    puts parts_of_files.join('  ')
   end
-  # file_list_for_output(COLUMN × row_size行列)をCOLUMN列で出力する
-  file_list_for_output.transpose.each do |files|
-    puts files.join('  ')
+end
+
+def generate_output_files(files)
+  output_files = []
+  files.each do |parts_of_files|
+    max_length = 0
+    parts_of_files.each do |file|
+      max_length = file.length if file.length > max_length
+    end
+    output_files << parts_of_files.map { |file| file.ljust(max_length, ' ') }
   end
+  output_files.transpose
 end
 
 input_files = Dir.glob('*')
 
 if !input_files.empty?
-  file_list = generate_file_list(input_files)
-  print_file_list(file_list)
+  files = generate_files(input_files)
+  print_files(files)
 end
