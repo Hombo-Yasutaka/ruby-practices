@@ -2,7 +2,7 @@
 
 COLUMN = 3.0
 
-# 返り値はCOLUMN × row_sizeの行列(2次元配列)を想定
+# 返り値はrow_size × COLUMNの行列(2次元配列)を想定
 def generate_files(input_files)
   # 出力する際の行数
   row_size = (input_files.size / COLUMN).ceil
@@ -12,26 +12,20 @@ def generate_files(input_files)
     row = index % row_size
     files[column][row] = file
   end
-  files
+  files.transpose
 end
 
 def print_files(files)
-  output_files = generate_output_files(files)
-  output_files.each do |parts_of_files|
-    puts parts_of_files.join('  ')
-  end
-end
-
-def generate_output_files(files)
-  output_files = []
-  files.each do |parts_of_files|
-    max_length = 0
-    parts_of_files.each do |file|
-      max_length = file.length if file.length > max_length
+  # 出力する各列の表示幅
+  max_widths = Array.new(COLUMN, 0)
+  max_widths.each_index do |column|
+    files.each do |parts_of_files|
+      max_widths[column] = parts_of_files[column].length if parts_of_files[column].length > max_widths[column]
     end
-    output_files << parts_of_files.map { |file| file.ljust(max_length, ' ') }
   end
-  output_files.transpose
+  files.each do |parts_of_files|
+    puts parts_of_files.map.with_index { |file, column| file.ljust(max_widths[column], ' ') }.join('  ')
+  end
 end
 
 input_files = Dir.glob('*')
