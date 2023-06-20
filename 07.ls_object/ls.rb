@@ -1,6 +1,24 @@
 # frozen_string_literal: true
+require 'optparse'
 
 COLUMN = 3.0
+
+def parse_options()
+  opt = OptionParser.new
+  options = {}
+  opt.on('-a') { |v| options[:a] = v }
+  opt.parse(ARGV)
+  options
+end
+
+def get_input_files(options)
+  if options[:a]
+    input_files = Dir.entries('.').sort
+  else
+    input_files = Dir.glob('*')
+  end
+end
+
 
 # 返り値はrow_size × COLUMNの行列(2次元配列)を想定
 def generate_files(input_files)
@@ -28,7 +46,8 @@ def print_files(files)
   end
 end
 
-input_files = Dir.glob('*')
+options = parse_options
+input_files = get_input_files(options)
 
 if !input_files.empty?
   files = generate_files(input_files)
