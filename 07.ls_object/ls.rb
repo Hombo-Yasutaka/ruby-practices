@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
+require 'optparse'
+require 'etc'
+
 COLUMN = 3.0
+
+def parse_options
+  opt = OptionParser.new
+  options = {}
+  opt.on('-l') { |v| options[:l] = v }
+  opt.parse(ARGV)
+  options
+end
 
 # 返り値はrow_size × COLUMNの行列(2次元配列)を想定
 def generate_files(input_files)
@@ -28,9 +39,94 @@ def print_files(files)
   end
 end
 
+def determine_file_type(file_info)
+  if file_info.file?
+    '-'
+  elsif file_info.directory?
+    'd'
+  elsif file_info.symlink?
+    'l'
+  end
+end
+
+def determine_file_permission(file_info)
+  permission_binary = format('%b', file_info.mode)[-9..]
+  permission_char = ''
+  permission_binary.each_char.with_index do |char, index|
+    permission_char += if char == '1'
+                         case index % 3
+                         when 0
+                           'r'
+                         when 1
+                           'w'
+                         else
+                           'x'
+                         end
+                       else
+                         '-'
+                       end
+  end
+  permission_char
+end
+
+def generate_file_details(file)
+  file_info = File.lstat(file)
+  [
+    file_info.nlink.to_s,
+    Etc.getpwuid(file_info.uid).name,
+    Etc.getpwuid(file_info.gid).name,
+    file_info.size.to_s,
+    file_info.mtime.strftime('%-m月 %e %H:%M'),
+    if file_info.symlink?
+      "#{file} -> #{File.readlink(file)}"
+    else
+      file
+    end
+  ]
+end
+
+def print_files_with_detail(files)
+  max_widths = Array.new(7, 0)
+  max_widths.each_index do |column|
+    files.each do |file_info|
+      max_widths[column] = file_info[column].length if file_info[column].length > max_widths[column]
+    end
+  end
+  files.each do |file_info|
+    puts file_info.map.with_index { |info, column|
+      case column
+      when 1
+        "#{info.rjust(max_widths[column], ' ')} "
+      when 4
+        "#{info.rjust(max_widths[column], ' ')}  "
+      when 6
+        info.ljust(max_widths[column], ' ')
+      else
+        "#{info.ljust(max_widths[column], ' ')} "
+      end
+    }.join
+  end
+end
+
+options = parse_options
 input_files = Dir.glob('*')
 
 if !input_files.empty?
-  files = generate_files(input_files)
-  print_files(files)
+  if options[:l]
+    blocks = 0
+    files = []
+    input_files.each do |file|
+      file_info = File.lstat(file)
+      blocks += file_info.blocks / 2
+      files << [
+        "#{determine_file_type(file_info)}#{determine_file_permission(file_info)}",
+        generate_file_details(file)
+      ].flatten
+    end
+    puts "合計 #{blocks}"
+    print_files_with_detail(files)
+  else
+    files = generate_files(input_files)
+    print_files(files)
+  end
 end
