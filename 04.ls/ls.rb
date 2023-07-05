@@ -11,6 +11,7 @@ def parse_options
   opt.on('-a') { |v| options[:a] = v }
   opt.on('-l') { |v| options[:l] = v }
   opt.on('-r') { |v| options[:r] = v }
+  opt.parse(ARGV)
   options
 end
 
