@@ -30,9 +30,7 @@ def print_files(files)
   # 出力する各列の表示幅
   max_widths = Array.new(COLUMN, 0)
   max_widths.each_index do |column|
-    files.each do |parts_of_files|
-      max_widths[column] = parts_of_files[column].length if parts_of_files[column].length > max_widths[column]
-    end
+    max_widths[column] = files.transpose[column].max_by(&:length).length
   end
   files.each do |parts_of_files|
     puts parts_of_files.map.with_index { |file, column| file.ljust(max_widths[column], ' ') }.join('  ')
@@ -88,9 +86,7 @@ end
 def print_files_with_detail(files)
   max_widths = Array.new(7, 0)
   max_widths.each_index do |column|
-    files.each do |file_info|
-      max_widths[column] = file_info[column].length if file_info[column].length > max_widths[column]
-    end
+    max_widths[column] = files.transpose[column].max_by(&:length).length
   end
   files.each do |file_info|
     puts file_info.map.with_index { |info, column|
