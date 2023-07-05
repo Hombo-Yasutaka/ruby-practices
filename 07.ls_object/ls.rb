@@ -8,9 +8,18 @@ COLUMN = 3.0
 def parse_options
   opt = OptionParser.new
   options = {}
+  opt.on('-r') { |v| options[:r] = v }
   opt.on('-l') { |v| options[:l] = v }
   opt.parse(ARGV)
   options
+end
+
+def get_input_files(options)
+  if options[:r]
+    Dir.glob('*').reverse
+  else
+    Dir.glob('*')
+  end
 end
 
 # 返り値はrow_size × COLUMNの行列(2次元配列)を想定
@@ -109,7 +118,7 @@ def print_files_with_detail(files)
 end
 
 options = parse_options
-input_files = Dir.glob('*')
+input_files = get_input_files(options)
 
 if !input_files.empty?
   if options[:l]
