@@ -85,7 +85,7 @@ def print_files_with_detail(files)
       when 4
         "#{info.rjust(max_widths[column], ' ')}  "
       when 6
-        info.ljust(max_widths[column], ' ')
+        info
       else
         "#{info.ljust(max_widths[column], ' ')} "
       end
