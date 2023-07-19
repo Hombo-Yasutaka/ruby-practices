@@ -13,38 +13,24 @@ def parse_options
   opt.on('-w') { |v| options[:w] = v }
   opt.on('-c') { |v| options[:c] = v }
   opt.parse!(ARGV)
-  options = options.map { |key, _| [key, true] }.to_h if !options.value? true
+  options = options.map { |key, _| [key, true] }.to_h if !options.value?(true)
   options
 end
 
-def count_lines(file)
-  lines = 0
-  file.each do
-    lines += 1
-  end
-  lines
-end
-
-def count_words(file)
-  words = 0
-  file.each do |line|
-    words += line.split(' ').length
-  end
-  words
-end
-
 def print_outputs(outputs)
-  max_widths = Array.new(outputs[0].length, 0)
-  max_widths.each_index do |column|
-    max_widths[column] = outputs.transpose[column].max_by(&:length).length
-  end
-  max_widths[..-2] = max_widths[0..2].map { max_widths[..-2].max }
+  digit_nums = []
   outputs.each do |output|
-    puts output.map.with_index { |value, column|
+    output[..-2].each do |value|
+      digit_nums << value.length
+    end
+  end
+  max_width = digit_nums.max
+  outputs.each do |output|
+    puts output.map { |value|
       if value == output[-1]
         value
       else
-        "#{value.rjust(max_widths[column], ' ')} "
+        "#{value.rjust(max_width, ' ')} "
       end
     }.join
   end
@@ -52,29 +38,28 @@ end
 
 options = parse_options
 outputs = []
-total_line = 0
-total_word = 0
-total_size = 0
 if ARGV.empty?
-  file = readlines
-  byte_size = 0
-  file.each do |line|
-    byte_size += line.bytesize
-  end
-  lines = count_lines(file).to_s
-  words = count_words(file).to_s
-  puts "#{lines.rjust(7, ' ')} #{words.rjust(7, ' ')} #{byte_size.to_s.rjust(7, ' ')}"
+  lines = readlines
+  size = lines.sum(&:bytesize)
+  line_num = lines.length.to_s
+  word_num = lines.sum { |line| line.split(' ').length }.to_s
+  puts "#{line_num.rjust(7, ' ')} #{word_num.rjust(7, ' ')} #{size.to_s.rjust(7, ' ')}"
 else
+  total_line = 0
+  total_word = 0
+  total_size = 0
   ARGV.each do |filepath|
     output = []
-    lines = count_lines(File.open(filepath))
-    words = count_words(File.open(filepath))
-    size = File.open(filepath).size
-    total_line += lines
-    total_word += words
+    file = File.read(filepath)
+    lines = file.split(/\R/)
+    line_num = lines.length
+    word_num = lines.sum { |line| line.split(' ').length }
+    size = file.size
+    total_line += line_num
+    total_word += word_num
     total_size += size
-    output << lines.to_s if options[:l]
-    output << words.to_s if options[:w]
+    output << line_num.to_s if options[:l]
+    output << word_num.to_s if options[:w]
     output << size.to_s if options[:c]
     output << filepath
     outputs << output
